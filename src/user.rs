@@ -28,7 +28,10 @@ impl User {
     }
 
     /// 验证密码是否正确  
-    /// 无法确认来源是否正确，故使用 unsafe
+    /// # Safety
+    ///
+    /// 无法确认来源是否正确，故使用 unsafe  
+    /// 当前仅当该 User 是从数据库查询得到的结果时，本函数保证在功能上正确
     pub unsafe fn verify(&self, password: &str) -> Result<bool, NoteError> {
         Ok(bcrypt::verify(password, &self.password)
             .map_err(|err| NoteError::AuthError(format!("Failed compare password: {}", err)))?)

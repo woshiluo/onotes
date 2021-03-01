@@ -12,7 +12,6 @@ chrono = "0.4.19"
 
 # Diesel for SQL
 diesel = { version = "1.4.4", features = ["sqlite"] }
-dotenv = "0.15.0"
 
 # Rand
 rand = "0.8"
