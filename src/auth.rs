@@ -68,7 +68,7 @@ impl AuthUser {
         }
     }
     /// 增加一个 Token
-    pub fn add_token(&self, conn: &DbConn) -> Result<(), NoteError> {
+    pub fn add_token(&self, conn: &DbConn) -> Result<String, NoteError> {
         match self.level {
             AuthLevel::Password => (),
             _ => {
@@ -80,7 +80,7 @@ impl AuthUser {
 
         let token = Token::new(self.id);
         token.insert(conn, &*self)?;
-        Ok(())
+        Ok(String::from(token.get_token()))
     }
 }
 
