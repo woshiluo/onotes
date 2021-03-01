@@ -15,7 +15,7 @@ pub mod user;
 const TOKEN_LEN: u32 = 32;
 
 // TODO: Is this necessary?
-pub struct DbConn(diesel::SqliteConnection);
+type DbConn = diesel::SqliteConnection;
 
 // TODO: 进一步展开 SQLError
 /// Note 错误类型

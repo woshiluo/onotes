@@ -32,7 +32,7 @@ impl Edge {
 
         let edge_list = post_edge
             .filter(from_post.eq(from_id))
-            .load::<RawEdge>(&conn.0)
+            .load::<RawEdge>(conn)
             .map_err(|err| {
                 NoteError::SQLError(format!("Failed query edge from {}: {}", from_id, err))
             })?
@@ -49,7 +49,7 @@ impl Edge {
 
         let edge_list = post_edge
             .filter(to_post.eq(to_id))
-            .load::<RawEdge>(&conn.0)
+            .load::<RawEdge>(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed query edge to {}: {}", to_id, err)))?
             .iter()
             .map(Edge::from)
@@ -68,7 +68,7 @@ impl AuthInsert for Edge {
 
         diesel::insert_into(post_edge::table)
             .values(InsertEdge::from(&*self))
-            .execute(&conn.0)
+            .execute(conn)
             .map_err(|err| {
                 NoteError::SQLError(format!("Failed to delete edge{:?}: {}", self, err))
             })?;
@@ -85,7 +85,7 @@ impl AuthDelete for Edge {
         user.auth()?;
 
         diesel::delete(table.filter(id.eq(self.get_id())))
-            .execute(&conn.0)
+            .execute(conn)
             .map_err(|err| {
                 NoteError::SQLError(format!("Failed to delete edge{:?}: {}", self, err))
             })?;

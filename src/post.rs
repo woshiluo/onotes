@@ -37,7 +37,7 @@ impl AuthUpdate for Post {
 
         diesel::update(posts.filter(id.eq(self.id)))
             .set(InsertPost::from(&*self))
-            .execute(&conn.0)
+            .execute(conn)
             .map_err(|err| {
                 NoteError::SQLError(format!("Failed update post {}: {}", self.id, err))
             })?;
@@ -55,7 +55,7 @@ impl AuthInsert for Post {
 
         diesel::insert_into(posts::table)
             .values(InsertPost::from(&*self))
-            .execute(&conn.0)
+            .execute(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to insert post: {}", err)))?;
 
         Ok(())
@@ -75,7 +75,7 @@ impl AuthDelete for Post {
         }
 
         diesel::delete(posts.filter(id.eq(self.id)))
-            .execute(&conn.0)
+            .execute(conn)
             .map_err(|err| {
                 NoteError::SQLError(format!("Failed update post {}: {}", self.id, err))
             })?;

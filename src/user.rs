@@ -41,7 +41,7 @@ impl User {
 
         diesel::insert_into(users::table)
             .values(InsertUser::from((&*self, self.password.as_str())))
-            .execute(&conn.0)
+            .execute(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to insert user: {}", err)))?;
 
         Ok(())
@@ -54,7 +54,7 @@ impl User {
         Ok(User::from(
             users
                 .filter(nickname.eq(name))
-                .first::<RawUser>(&conn.0)
+                .first::<RawUser>(conn)
                 .map_err(|err| {
                     NoteError::SQLError(format!(
                         "Failed to query user from nickname{}: {}",
@@ -71,7 +71,7 @@ impl User {
         Ok(User::from(
             users
                 .filter(id.eq(user_id))
-                .first::<RawUser>(&conn.0)
+                .first::<RawUser>(conn)
                 .map_err(|err| {
                     NoteError::SQLError(format!("Failed to query user from id{}:{}", user_id, err))
                 })?,
@@ -88,7 +88,7 @@ impl AuthUpdate for User {
                     use crate::schema::users::dsl::*;
                     diesel::update(users.filter(id.eq(self.id)))
                         .set(InsertUser::from((&*self, self.password.as_str())))
-                        .execute(&conn.0)
+                        .execute(conn)
                         .map_err(|err| {
                             NoteError::SQLError(format!("Failed update user {}: {}", self.id, err))
                         })?;

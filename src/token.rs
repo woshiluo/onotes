@@ -31,7 +31,7 @@ impl Token {
 
         let raw_list = tokens
             .filter(token.eq(current_token))
-            .load::<RawToken>(&conn.0)
+            .load::<RawToken>(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to query token: {}", err)))?;
 
         let mut token_list = vec![];
@@ -64,7 +64,7 @@ impl AuthInsert for Token {
 
         diesel::insert_into(tokens::table)
             .values(InsertToken::from(&*self))
-            .execute(&conn.0)
+            .execute(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to insert token: {}", err)))?;
 
         Ok(())

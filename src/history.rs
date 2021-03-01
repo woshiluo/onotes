@@ -48,7 +48,7 @@ impl History {
         use crate::schema::histories::dsl::*;
         let history_list = histories
             .filter(post_id.eq(query_id))
-            .load::<RawHistory>(&conn.0)
+            .load::<RawHistory>(conn)
             .map_err(|err| {
                 NoteError::SQLError(format!("Failed query history of {}: {}", query_id, err))
             })?
@@ -69,7 +69,7 @@ impl AuthInsert for History {
 
         diesel::insert_into(histories)
             .values(InsertHistory::from(&*self))
-            .execute(&conn.0)
+            .execute(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to insert history: {}", err)))?;
 
         Ok(())
@@ -84,7 +84,7 @@ impl AuthDelete for History {
         user.auth()?;
 
         diesel::delete(histories.filter(id.eq(self.get_id())))
-            .execute(&conn.0)
+            .execute(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to delete history: {}", err)))?;
 
         Ok(())
