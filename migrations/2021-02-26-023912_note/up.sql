@@ -1,7 +1,7 @@
 -- Your SQL goes here
 CREATE TABLE posts (
-	id	INT PRIMARY KEY		NOT NULL,
-	title			TEXT	NOT NULL,
+	id				INTEGER			PRIMARY KEY	AUTOINCREMENT,
+	title			TEXT			NOT NULL,
 	markdown		TEXT
 );
 

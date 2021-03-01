@@ -94,7 +94,7 @@ impl AuthDelete for History {
 impl From<&RawHistory> for History {
     fn from(history: &RawHistory) -> History {
         History {
-            id: history.id,
+            id: history.id.expect("history id is null!"),
             post_id: history.post_id,
             markdown: history.markdown.clone(),
             time: history.time,

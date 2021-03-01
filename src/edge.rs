@@ -97,7 +97,7 @@ impl AuthDelete for Edge {
 impl From<&RawEdge> for Edge {
     fn from(edge: &RawEdge) -> Edge {
         Edge {
-            id: edge.id,
+            id: edge.id.expect("Edge id is null"),
             from_post: edge.from_post,
             to_post: edge.to_post,
         }

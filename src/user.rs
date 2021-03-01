@@ -27,6 +27,16 @@ impl User {
         self.admin
     }
 
+    pub fn new(nickname: String, password: String, email: String) -> User {
+        User {
+            id: 0,
+            admin: false,
+            nickname,
+            password,
+            email,
+        }
+    }
+
     /// 验证密码是否正确  
     /// # Safety
     ///
@@ -38,10 +48,11 @@ impl User {
     }
 
     /// 插入当前用户（很明显，插入用户不需要验证）
-    pub fn insert(&self, conn: &DbConn) -> Result<(), NoteError> {
+    pub fn insert(&mut self, conn: &DbConn) -> Result<(), NoteError> {
         use crate::diesel::*;
         use crate::schema::users;
 
+        self.admin = false;
         diesel::insert_into(users::table)
             .values(InsertUser::from((&*self, self.password.as_str())))
             .execute(conn)
@@ -111,7 +122,7 @@ impl AuthUpdate for User {
 impl From<RawUser> for User {
     fn from(raw: RawUser) -> User {
         User {
-            id: raw.id,
+            id: raw.id.expect("User id is null!"),
             nickname: raw.nickname,
             password: raw.password,
             email: raw.email,

@@ -2,6 +2,7 @@
 use crate::auth::{AuthDelete, AuthInsert, AuthUpdate, AuthUser};
 use crate::history::History;
 use crate::insert::InsertPost;
+use crate::raw::RawPost;
 use crate::{DbConn, NoteError};
 
 pub struct Post {
@@ -89,6 +90,16 @@ impl From<&Post> for InsertPost {
         InsertPost {
             title: String::from(post.get_title()),
             markdown: Some(String::from(post.get_markdown())),
+        }
+    }
+}
+
+impl From<&RawPost> for Post {
+    fn from(post: &RawPost) -> Post {
+        Post {
+            id: post.id.expect("Post id is null!"),
+            title: post.title.clone(),
+            markdown: post.markdown.clone(),
         }
     }
 }

@@ -1,6 +1,6 @@
 -- Your SQL goes here
 CREATE TABLE users( 
-	id			INT		PRIMARY KEY NOT NULL,
+	id			INTEGER				PRIMARY KEY	AUTOINCREMENT,
 	nickname	TEXT	UNIQUE		NOT NULL,
 	password	TEXT				NOT NULL,
 	email		TEXT				NOT NULL,
@@ -8,7 +8,7 @@ CREATE TABLE users(
 );
 
 CREATE TABLE tokens( 
-	id			INT		PRIMARY KEY NOT NULL,
+	id			INTEGER				PRIMARY KEY	AUTOINCREMENT,
 	user_id		INT					NOT NULL,
 	token		TEXT				NOT NULL
 );

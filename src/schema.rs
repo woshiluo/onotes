@@ -1,6 +1,6 @@
 table! {
     histories (id) {
-        id -> Integer,
+        id -> Nullable<Integer>,
         post_id -> Integer,
         time -> Integer,
         markdown -> Nullable<Text>,
@@ -9,7 +9,7 @@ table! {
 
 table! {
     post_edge (id) {
-        id -> Integer,
+        id -> Nullable<Integer>,
         from_post -> Integer,
         to_post -> Integer,
     }
@@ -17,7 +17,7 @@ table! {
 
 table! {
     posts (id) {
-        id -> Integer,
+        id -> Nullable<Integer>,
         title -> Text,
         markdown -> Nullable<Text>,
     }
@@ -25,7 +25,7 @@ table! {
 
 table! {
     tokens (id) {
-        id -> Integer,
+        id -> Nullable<Integer>,
         user_id -> Integer,
         token -> Text,
     }
@@ -33,7 +33,7 @@ table! {
 
 table! {
     users (id) {
-        id -> Integer,
+        id -> Nullable<Integer>,
         nickname -> Text,
         password -> Text,
         email -> Text,

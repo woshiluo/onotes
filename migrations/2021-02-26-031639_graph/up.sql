@@ -1,6 +1,6 @@
 -- Your SQL goes here
 CREATE TABLE post_edge(
-	id		INT PRIMARY KEY	NOT NULL,
+	id			INTEGER			PRIMARY KEY	AUTOINCREMENT,
 	from_post	INT				NOT NULL,
 	to_post		INT				NOT NULL
 )
