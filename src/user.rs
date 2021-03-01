@@ -53,6 +53,7 @@ impl User {
         use crate::schema::users;
 
         self.admin = false;
+        self.password = bcrypt::hash(&self.password, bcrypt::DEFAULT_COST).unwrap();
         diesel::insert_into(users::table)
             .values(InsertUser::from((&*self, self.password.as_str())))
             .execute(conn)

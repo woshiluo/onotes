@@ -60,7 +60,9 @@ impl AuthInsert for Token {
         use crate::diesel::*;
         use crate::schema::tokens;
 
-        user.auth()?;
+        if user.get_id() != self.user_id {
+            NoteError::NoPermission("You can not give other account token".to_string());
+        }
 
         diesel::insert_into(tokens::table)
             .values(InsertToken::from(&*self))
