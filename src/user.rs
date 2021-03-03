@@ -106,7 +106,12 @@ impl AuthUpdate for User {
                     use crate::diesel::*;
                     use crate::schema::users::dsl::*;
                     diesel::update(users.filter(id.eq(self.id)))
-                        .set(InsertUser::from((&*self, self.password.as_str())))
+                        .set(InsertUser::from((
+                            &*self,
+                            bcrypt::hash(self.password.as_str(), bcrypt::DEFAULT_COST)
+                                .unwrap()
+                                .as_str(),
+                        )))
                         .execute(conn)
                         .map_err(|err| {
                             NoteError::SQLError(format!("Failed update user {}: {}", self.id, err))

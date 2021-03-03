@@ -94,6 +94,7 @@ impl AuthDelete for Post {
         use crate::schema::posts::dsl::*;
 
         user.auth()?;
+        // TODO: Delete all edges from / to this node
 
         let history_list = History::get_history(self.get_id(), &*conn)?;
         for history in history_list {
