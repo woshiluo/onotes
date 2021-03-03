@@ -56,7 +56,7 @@ impl Token {
 }
 
 impl AuthInsert for Token {
-    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<(), NoteError> {
+    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<i32, NoteError> {
         use crate::diesel::*;
         use crate::schema::tokens;
 
@@ -69,7 +69,11 @@ impl AuthInsert for Token {
             .execute(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to insert token: {}", err)))?;
 
-        Ok(())
+        let return_id = tokens::table
+            .select(crate::last_insert_rowid)
+            .get_result::<i32>(conn)
+            .map_err(|err| NoteError::SQLError(format!("Failed to query insert id: {}", err)))?;
+        Ok(return_id)
     }
 }
 

@@ -27,9 +27,9 @@ impl User {
         self.admin
     }
 
-    pub fn new(nickname: String, password: String, email: String) -> User {
+    pub fn new(id: Option<i32>, nickname: String, password: String, email: String) -> User {
         User {
-            id: 0,
+            id: id.unwrap_or_else(|| 0),
             admin: false,
             nickname,
             password,
@@ -48,7 +48,7 @@ impl User {
     }
 
     /// 插入当前用户（很明显，插入用户不需要验证）
-    pub fn insert(&mut self, conn: &DbConn) -> Result<(), NoteError> {
+    pub fn insert(&mut self, conn: &DbConn) -> Result<i32, NoteError> {
         use crate::diesel::*;
         use crate::schema::users;
 
@@ -59,7 +59,11 @@ impl User {
             .execute(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to insert user: {}", err)))?;
 
-        Ok(())
+        let return_id = users::table
+            .select(crate::last_insert_rowid)
+            .get_result::<i32>(conn)
+            .map_err(|err| NoteError::SQLError(format!("Failed to query insert id: {}", err)))?;
+        Ok(return_id)
     }
     /// 通过用户昵称获取用户
     pub fn from_nickname(name: &str, conn: &DbConn) -> Result<User, NoteError> {

@@ -3,6 +3,8 @@ use crate::token::Token;
 use crate::user::User;
 use crate::{DbConn, NoteError};
 
+use serde::Deserialize;
+
 use std::convert::TryFrom;
 
 /// 认证过的用户类型，可以数据库更新
@@ -24,6 +26,7 @@ pub enum AuthLevel {
 }
 
 /// 用于登陆的枚举
+#[derive(Deserialize, Clone)]
 pub enum Auth {
     Password((String, String)),
     Token((i32, String)),
@@ -36,7 +39,7 @@ pub trait AuthUpdate {
 
 /// 将自身插入进数据库
 pub trait AuthInsert {
-    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<(), NoteError>;
+    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<i32, NoteError>;
 }
 
 /// 将自身从数据库中移除
@@ -92,7 +95,7 @@ impl TryFrom<(Auth, &DbConn)> for AuthUser {
 
         match &auth {
             Auth::Password((user_name, user_password)) => {
-                let user = User::from_nickname(user_name, &*conn).map_err(|err| {
+                let user = User::from_nickname(user_name, &conn).map_err(|err| {
                     NoteError::UserNotFound(format!(
                         "Not found user by nickname\"{}\": {:?}",
                         user_name, err
@@ -104,10 +107,10 @@ impl TryFrom<(Auth, &DbConn)> for AuthUser {
                 }
             }
             Auth::Token((user_id, user_token)) => {
-                match Token::verify(user_id, user_token, &*conn)? {
+                match Token::verify(user_id, user_token, &conn)? {
                     false => Err(NoteError::AuthError("Wrong token".to_string())),
                     true => {
-                        let user = User::from_user_id(*user_id, &*conn).map_err(|err| {
+                        let user = User::from_user_id(*user_id, &conn).map_err(|err| {
                             NoteError::UserNotFound(format!(
                                 "Not found user by id\"{}\": {:?}",
                                 user_id, err

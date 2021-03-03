@@ -24,6 +24,27 @@ impl Post {
             None => "",
         }
     }
+
+    pub fn new(title: String, markdown: Option<String>) -> Post {
+        Post {
+            id: 0,
+            title,
+            markdown,
+        }
+    }
+    pub fn from_id(conn: &DbConn, post_id: i32) -> Result<Post, NoteError> {
+        use crate::diesel::*;
+        use crate::schema::posts::dsl::*;
+
+        Ok(Post::from(
+            &posts
+                .filter(id.eq(post_id))
+                .first::<RawPost>(conn)
+                .map_err(|err| {
+                    NoteError::SQLError(format!("Failed to query post from id{}:{}", post_id, err))
+                })?,
+        ))
+    }
 }
 
 impl AuthUpdate for Post {
@@ -48,7 +69,7 @@ impl AuthUpdate for Post {
 }
 
 impl AuthInsert for Post {
-    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<(), NoteError> {
+    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<i32, NoteError> {
         use crate::diesel::*;
         use crate::schema::posts;
 
@@ -59,7 +80,11 @@ impl AuthInsert for Post {
             .execute(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to insert post: {}", err)))?;
 
-        Ok(())
+        let return_id = posts::table
+            .select(crate::last_insert_rowid)
+            .get_result::<i32>(conn)
+            .map_err(|err| NoteError::SQLError(format!("Failed to query insert id: {}", err)))?;
+        Ok(return_id)
     }
 }
 

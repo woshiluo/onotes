@@ -61,7 +61,7 @@ impl History {
 }
 
 impl AuthInsert for History {
-    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<(), NoteError> {
+    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<i32, NoteError> {
         use crate::diesel::*;
         use crate::schema::histories::dsl::*;
 
@@ -72,7 +72,11 @@ impl AuthInsert for History {
             .execute(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to insert history: {}", err)))?;
 
-        Ok(())
+        let return_id = histories
+            .select(crate::last_insert_rowid)
+            .get_result::<i32>(conn)
+            .map_err(|err| NoteError::SQLError(format!("Failed to query insert id: {}", err)))?;
+        Ok(return_id)
     }
 }
 

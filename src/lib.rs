@@ -12,14 +12,26 @@ pub mod post;
 pub mod token;
 pub mod user;
 
+extern crate serde;
+extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
+
+use serde::{Deserialize, Serialize};
+
 const TOKEN_LEN: u32 = 32;
 
-// TODO: Is this necessary?
 type DbConn = diesel::SqliteConnection;
+
+no_arg_sql_function!(
+    last_insert_rowid,
+    diesel::sql_types::Integer,
+    "Represents the SQL last_insert_row() function"
+);
 
 // TODO: 进一步展开 SQLError
 /// Note 错误类型
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub enum NoteError {
     /// 无法找到用户
     UserNotFound(String),
