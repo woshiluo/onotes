@@ -1,7 +1,8 @@
 -- Your SQL goes here
 CREATE TABLE histories(
-	id			INTEGER			PRIMARY KEY	AUTOINCREMENT,
-	post_id		INT				NOT NULL,
-	time		INT 			NOT NULL,
-	markdown	TEXT
+	id			INT 	UNSIGNED	AUTO_INCREMENT,
+	post_id		INT		UNSIGNED	NOT NULL,
+	time		INT 	UNSIGNED	NOT NULL,
+	markdown	TEXT,
+	PRIMARY KEY (`id`)
 )

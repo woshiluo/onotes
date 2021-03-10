@@ -9,7 +9,7 @@ use std::convert::TryFrom;
 
 /// 认证过的用户类型，可以数据库更新
 pub struct AuthUser {
-    id: i32,
+    id: u32,
     nickname: String,
     email: String,
     admin: bool,
@@ -29,7 +29,7 @@ pub enum AuthLevel {
 #[derive(Deserialize, Clone)]
 pub enum Auth {
     Password((String, String)),
-    Token((i32, String)),
+    Token((u32, String)),
 }
 
 /// 将自身同步进数据库
@@ -39,7 +39,7 @@ pub trait AuthUpdate {
 
 /// 将自身插入进数据库
 pub trait AuthInsert {
-    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<i32, NoteError>;
+    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<u32, NoteError>;
 }
 
 /// 将自身从数据库中移除
@@ -48,7 +48,7 @@ pub trait AuthDelete {
 }
 
 impl AuthUser {
-    pub fn get_id(&self) -> i32 {
+    pub fn get_id(&self) -> u32 {
         self.id
     }
     pub fn get_nickname(&self) -> &str {

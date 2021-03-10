@@ -5,19 +5,19 @@ use crate::raw::RawToken;
 use crate::{gen_token, DbConn, NoteError};
 
 pub struct Token {
-    user_id: i32,
+    user_id: u32,
     token: String,
 }
 
 impl Token {
-    pub fn new(user_id: i32) -> Token {
+    pub fn new(user_id: u32) -> Token {
         Token {
             user_id,
             token: gen_token(),
         }
     }
 
-    pub fn get_user_id(&self) -> i32 {
+    pub fn get_user_id(&self) -> u32 {
         self.user_id
     }
     pub fn get_token(&self) -> &str {
@@ -42,7 +42,7 @@ impl Token {
         Ok(token_list)
     }
     /// 验证对应 Token 是否合法
-    pub fn verify(id: &i32, token: &str, conn: &DbConn) -> Result<bool, NoteError> {
+    pub fn verify(id: &u32, token: &str, conn: &DbConn) -> Result<bool, NoteError> {
         let token_list = Token::from_token(token, &*conn)?;
 
         for token in token_list.iter() {
@@ -56,7 +56,7 @@ impl Token {
 }
 
 impl AuthInsert for Token {
-    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<i32, NoteError> {
+    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<u32, NoteError> {
         use crate::diesel::*;
         use crate::schema::tokens;
 
@@ -69,11 +69,7 @@ impl AuthInsert for Token {
             .execute(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to insert token: {}", err)))?;
 
-        let return_id = tokens::table
-            .select(crate::last_insert_rowid)
-            .get_result::<i32>(conn)
-            .map_err(|err| NoteError::SQLError(format!("Failed to query insert id: {}", err)))?;
-        Ok(return_id)
+        Ok(crate::get_last_insert_rowid(conn)?)
     }
 }
 

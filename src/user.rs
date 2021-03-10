@@ -6,7 +6,7 @@ use crate::{DbConn, NoteError};
 
 /// 用户
 pub struct User {
-    id: i32,
+    id: u32,
     nickname: String,
     password: String,
     email: String,
@@ -14,7 +14,7 @@ pub struct User {
 }
 
 impl User {
-    pub fn get_id(&self) -> i32 {
+    pub fn get_id(&self) -> u32 {
         self.id
     }
     pub fn get_nickname(&self) -> &str {
@@ -27,7 +27,7 @@ impl User {
         self.admin
     }
 
-    pub fn new(id: Option<i32>, nickname: String, password: String, email: String) -> User {
+    pub fn new(id: Option<u32>, nickname: String, password: String, email: String) -> User {
         User {
             id: id.unwrap_or_else(|| 0),
             admin: false,
@@ -37,10 +37,10 @@ impl User {
         }
     }
 
-    /// 验证密码是否正确  
+    /// 验证密码是否正确
     /// # Safety
     ///
-    /// 无法确认来源是否正确，故使用 unsafe  
+    /// 无法确认来源是否正确，故使用 unsafe
     /// 当前仅当该 User 是从数据库查询得到的结果时，本函数保证在功能上正确
     pub unsafe fn verify(&self, password: &str) -> Result<bool, NoteError> {
         Ok(bcrypt::verify(password, &self.password)
@@ -48,7 +48,7 @@ impl User {
     }
 
     /// 插入当前用户（很明显，插入用户不需要验证）
-    pub fn insert(&mut self, conn: &DbConn) -> Result<i32, NoteError> {
+    pub fn insert(&mut self, conn: &DbConn) -> Result<u32, NoteError> {
         use crate::diesel::*;
         use crate::schema::users;
 
@@ -59,11 +59,7 @@ impl User {
             .execute(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to insert user: {}", err)))?;
 
-        let return_id = users::table
-            .select(crate::last_insert_rowid)
-            .get_result::<i32>(conn)
-            .map_err(|err| NoteError::SQLError(format!("Failed to query insert id: {}", err)))?;
-        Ok(return_id)
+        Ok(crate::get_last_insert_rowid(conn)?)
     }
     /// 通过用户昵称获取用户
     pub fn from_nickname(name: &str, conn: &DbConn) -> Result<User, NoteError> {
@@ -83,7 +79,7 @@ impl User {
         ))
     }
     /// 通过用户 ID 获取用户
-    pub fn from_user_id(user_id: i32, conn: &DbConn) -> Result<User, NoteError> {
+    pub fn from_user_id(user_id: u32, conn: &DbConn) -> Result<User, NoteError> {
         use crate::diesel::*;
         use crate::schema::users::dsl::*;
 
@@ -132,11 +128,11 @@ impl AuthUpdate for User {
 impl From<RawUser> for User {
     fn from(raw: RawUser) -> User {
         User {
-            id: raw.id.expect("User id is null!"),
+            id: raw.id,
             nickname: raw.nickname,
             password: raw.password,
             email: raw.email,
-            admin: (raw.admin != 0),
+            admin: raw.admin,
         }
     }
 }

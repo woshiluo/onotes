@@ -1,50 +1,50 @@
 table! {
     histories (id) {
-        id -> Nullable<Integer>,
-        post_id -> Integer,
-        time -> Integer,
+        id -> Unsigned<Integer>,
+        post_id -> Unsigned<Integer>,
+        time -> Unsigned<Integer>,
         markdown -> Nullable<Text>,
     }
 }
 
 table! {
-    post_edge (id) {
-        id -> Nullable<Integer>,
-        from_post -> Integer,
-        to_post -> Integer,
-    }
-}
-
-table! {
     posts (id) {
-        id -> Nullable<Integer>,
+        id -> Unsigned<Integer>,
         title -> Text,
         markdown -> Nullable<Text>,
     }
 }
 
 table! {
+    post_edge (id) {
+        id -> Unsigned<Integer>,
+        from_post -> Unsigned<Integer>,
+        to_post -> Unsigned<Integer>,
+    }
+}
+
+table! {
     tokens (id) {
-        id -> Nullable<Integer>,
-        user_id -> Integer,
+        id -> Unsigned<Integer>,
+        user_id -> Unsigned<Integer>,
         token -> Text,
     }
 }
 
 table! {
     users (id) {
-        id -> Nullable<Integer>,
+        id -> Unsigned<Integer>,
         nickname -> Text,
         password -> Text,
         email -> Text,
-        admin -> Integer,
+        admin -> Bool,
     }
 }
 
 allow_tables_to_appear_in_same_query!(
     histories,
-    post_edge,
     posts,
+    post_edge,
     tokens,
     users,
 );

@@ -10,8 +10,8 @@ edition = "2018"
 # For time 
 chrono = "0.4.19"
 
-# Diesel for SQL
-diesel = { version = "1.4.4", features = ["sqlite"] }
+# Diesel for MySQL
+diesel = { version = "1.4.4", features = ["mysql"] }
 
 # Rand
 rand = "0.8"

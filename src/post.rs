@@ -1,18 +1,22 @@
 //! 文章
 use crate::auth::{AuthDelete, AuthInsert, AuthUpdate, AuthUser};
+use crate::edge::Edge;
 use crate::history::History;
 use crate::insert::InsertPost;
 use crate::raw::RawPost;
 use crate::{DbConn, NoteError};
 
+use serde::Serialize;
+
+#[derive(Serialize)]
 pub struct Post {
-    id: i32,
+    id: u32,
     title: String,
     markdown: Option<String>,
 }
 
 impl Post {
-    pub fn get_id(&self) -> i32 {
+    pub fn get_id(&self) -> u32 {
         self.id
     }
     pub fn get_title(&self) -> &str {
@@ -25,14 +29,14 @@ impl Post {
         }
     }
 
-    pub fn new(title: String, markdown: Option<String>) -> Post {
+    pub fn new(id: Option<u32>, title: String, markdown: Option<String>) -> Post {
         Post {
-            id: 0,
+            id: id.unwrap_or_else(|| 0),
             title,
             markdown,
         }
     }
-    pub fn from_id(conn: &DbConn, post_id: i32) -> Result<Post, NoteError> {
+    pub fn from_id(conn: &DbConn, post_id: u32) -> Result<Post, NoteError> {
         use crate::diesel::*;
         use crate::schema::posts::dsl::*;
 
@@ -69,7 +73,7 @@ impl AuthUpdate for Post {
 }
 
 impl AuthInsert for Post {
-    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<i32, NoteError> {
+    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<u32, NoteError> {
         use crate::diesel::*;
         use crate::schema::posts;
 
@@ -80,11 +84,11 @@ impl AuthInsert for Post {
             .execute(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to insert post: {}", err)))?;
 
-        let return_id = posts::table
-            .select(crate::last_insert_rowid)
-            .get_result::<i32>(conn)
-            .map_err(|err| NoteError::SQLError(format!("Failed to query insert id: {}", err)))?;
-        Ok(return_id)
+        let insert_id = crate::get_last_insert_rowid(conn)?;
+        Edge::new(1, insert_id).insert(conn, user)?;
+        let history = History::new(insert_id, &self.get_markdown());
+        history.insert(&*conn, &*user)?;
+        Ok(insert_id)
     }
 }
 
@@ -94,8 +98,12 @@ impl AuthDelete for Post {
         use crate::schema::posts::dsl::*;
 
         user.auth()?;
-        // TODO: Delete all edges from / to this node
 
+        // Delete all Edge
+        Edge::update_to_list(conn, user, self.get_id(), vec![])?;
+        Edge::update_from_list(conn, user, self.get_id(), vec![])?;
+
+        // Delete all history
         let history_list = History::get_history(self.get_id(), &*conn)?;
         for history in history_list {
             history.delete(&*conn, user)?;
@@ -123,7 +131,7 @@ impl From<&Post> for InsertPost {
 impl From<&RawPost> for Post {
     fn from(post: &RawPost) -> Post {
         Post {
-            id: post.id.expect("Post id is null!"),
+            id: post.id,
             title: post.title.clone(),
             markdown: post.markdown.clone(),
         }

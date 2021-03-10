@@ -7,32 +7,33 @@ use crate::NoteError;
 use crate::insert::InsertHistory;
 
 /// 文章的历史记录
+#[derive(Serialize, Deserialize)]
 pub struct History {
-    id: i32,
-    post_id: i32,
+    id: u32,
+    post_id: u32,
     /// 文章 id
-    time: i32,
+    time: u32,
     /// 这次历史记录的时间
     markdown: Option<String>,
 }
 
 impl History {
-    pub fn new(post_id: i32, post_mardown: &str) -> History {
+    pub fn new(post_id: u32, post_mardown: &str) -> History {
         History {
             id: 0,
             post_id,
-            time: chrono::Utc::now().timestamp() as i32,
+            time: chrono::Utc::now().timestamp() as u32,
             markdown: Some(String::from(post_mardown)),
         }
     }
 
-    pub fn get_id(&self) -> i32 {
+    pub fn get_id(&self) -> u32 {
         self.id
     }
-    pub fn get_post_id(&self) -> i32 {
+    pub fn get_post_id(&self) -> u32 {
         self.post_id
     }
-    pub fn get_time(&self) -> i32 {
+    pub fn get_time(&self) -> u32 {
         self.time
     }
     pub fn get_markdown(&self) -> &str {
@@ -42,8 +43,24 @@ impl History {
         }
     }
 
+    pub fn from_id(conn: &DbConn, query_id: u32) -> Result<History, NoteError> {
+        use crate::diesel::*;
+        use crate::schema::histories::dsl::*;
+
+        let history = History::from(
+            &histories
+                .filter(id.eq(query_id))
+                .first::<RawHistory>(conn)
+                .map_err(|err| {
+                    NoteError::SQLError(format!("Failed query history of {}: {}", query_id, err))
+                })?,
+        );
+
+        Ok(history)
+    }
+
     /// 获取某篇文章的历史记录列表
-    pub fn get_history(query_id: i32, conn: &DbConn) -> Result<Vec<History>, NoteError> {
+    pub fn get_history(query_id: u32, conn: &DbConn) -> Result<Vec<History>, NoteError> {
         use crate::diesel::*;
         use crate::schema::histories::dsl::*;
         let history_list = histories
@@ -61,7 +78,7 @@ impl History {
 }
 
 impl AuthInsert for History {
-    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<i32, NoteError> {
+    fn insert(&self, conn: &DbConn, user: &AuthUser) -> Result<u32, NoteError> {
         use crate::diesel::*;
         use crate::schema::histories::dsl::*;
 
@@ -72,11 +89,7 @@ impl AuthInsert for History {
             .execute(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to insert history: {}", err)))?;
 
-        let return_id = histories
-            .select(crate::last_insert_rowid)
-            .get_result::<i32>(conn)
-            .map_err(|err| NoteError::SQLError(format!("Failed to query insert id: {}", err)))?;
-        Ok(return_id)
+        Ok(crate::get_last_insert_rowid(conn)?)
     }
 }
 
@@ -98,7 +111,7 @@ impl AuthDelete for History {
 impl From<&RawHistory> for History {
     fn from(history: &RawHistory) -> History {
         History {
-            id: history.id.expect("history id is null!"),
+            id: history.id,
             post_id: history.post_id,
             markdown: history.markdown.clone(),
             time: history.time,

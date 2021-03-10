@@ -1,10 +1,11 @@
 -- Your SQL goes here
 CREATE TABLE posts (
-	id				INTEGER			PRIMARY KEY	AUTOINCREMENT,
+	id				INT UNSIGNED	AUTO_INCREMENT,
 	title			TEXT			NOT NULL,
-	markdown		TEXT
+	markdown		TEXT,
+	PRIMARY KEY (`id`)
 );
 
 -- INSERT INDEX
-INSERT INTO posts (id, title, markdown)
-VALUES ( 1, 'Index', '`Hello, World!`' );
+INSERT INTO posts (title, markdown)
+VALUES ( 'Index', '`Hello, World!`' );
