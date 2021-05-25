@@ -1,5 +1,5 @@
 [package]
-name = "notes"
+name = "notes-lib"
 version = "0.1.0"
 authors = ["Woshiluo Luo <woshiluo.luo@outlook.com>"]
 edition = "2018"
