@@ -29,7 +29,7 @@ impl User {
 
     pub fn new(id: Option<u32>, nickname: String, password: String, email: String) -> User {
         User {
-            id: id.unwrap_or_else(|| 0),
+            id: id.unwrap_or(0),
             admin: false,
             nickname,
             password,
@@ -43,8 +43,8 @@ impl User {
     /// 无法确认来源是否正确，故使用 unsafe
     /// 当前仅当该 User 是从数据库查询得到的结果时，本函数保证在功能上正确
     pub unsafe fn verify(&self, password: &str) -> Result<bool, NoteError> {
-        Ok(bcrypt::verify(password, &self.password)
-            .map_err(|err| NoteError::AuthError(format!("Failed compare password: {}", err)))?)
+        bcrypt::verify(password, &self.password)
+            .map_err(|err| NoteError::AuthError(format!("Failed compare password: {}", err)))
     }
 
     /// 插入当前用户（很明显，插入用户不需要验证）
@@ -59,7 +59,7 @@ impl User {
             .execute(conn)
             .map_err(|err| NoteError::SQLError(format!("Failed to insert user: {}", err)))?;
 
-        Ok(crate::get_last_insert_rowid(conn)?)
+        crate::get_last_insert_rowid(conn)
     }
     /// 通过用户昵称获取用户
     pub fn from_nickname(name: &str, conn: &DbConn) -> Result<User, NoteError> {

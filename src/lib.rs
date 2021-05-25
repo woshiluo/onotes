@@ -25,7 +25,7 @@ type DbConn = diesel::MysqlConnection;
 
 pub fn get_last_insert_rowid(conn: &DbConn) -> Result<u32, NoteError> {
     use crate::diesel::RunQueryDsl;
-	use std::convert::TryInto;
+    use std::convert::TryInto;
 
     no_arg_sql_function!(
         last_insert_id,
@@ -36,7 +36,7 @@ pub fn get_last_insert_rowid(conn: &DbConn) -> Result<u32, NoteError> {
     let return_id = diesel::select(last_insert_id)
         .get_result::<i32>(conn)
         .map_err(|err| NoteError::SQLError(format!("Failed to query insert id: {}", err)))?;
-    Ok(return_id.try_into().unwrap_or_else(|_| 0))
+    Ok(return_id.try_into().unwrap_or(0))
 }
 
 // TODO: 进一步展开 SQLError
